@@ -51,8 +51,6 @@
      v_ruler.height(browser_height);
      v_creator.height(browser_height);
 
-     var step = 100;
-
      // var canvas = $('#canvas');
      // canvas.width(browser_width);
      // canvas.height(browser_height);
@@ -64,14 +62,20 @@
      var selected_guide = null;
      var selected_guide_type = null;
      
-     $(document).mousedown(function(e) {
-       if (e.pageX < v_creator.width() && e.pageY >= 20) {
+     var step = 100;
+     
+     v_creator.mousedown(function(e) {
          createVerticalGuide(e);
-       }
-       if (e.pageY < h_creator.height() && e.pageX >= 20) {
-         createHorizontalGuide(e);
-       }
-       // counter.show();
+         counter.css({"left" : e.pageX + step + "px", "top" : e.pageY - counter.height()/2 + "px"});
+         counter.text(e.pageX);
+       counter.show();
+     });
+     
+     h_creator.mousedown(function(e) {
+       createHorizontalGuide(e);
+       counter.css({"left" : e.pageX - counter.width()/2 + "px", "top" : e.pageY + step + "px"});
+       counter.text(e.pageY);
+       counter.show();
      });
      
      loadStoredGuides();
@@ -190,6 +194,7 @@
      
      rect.mousemove(function(e) {
        var counter = $("#counter");
+       var step = 100;
        if (selected_guide_type == 'vertical') {
          // selected_guide.attr({path: "M" + e.pageX + " 0L" + e.pageX + " " + browser_height});
          selected_guide.attr({x: e.pageX});
