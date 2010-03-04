@@ -1,0 +1,492 @@
+<!DOCTYPE HTML>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+	<title>untitled</title>
+	<link rel="stylesheet" href="stylesheets/reset-min.css" type="text/css" charset="utf-8" />
+	<link rel="stylesheet" href="stylesheets/base-min.css" type="text/css" charset="utf-8" />
+	<link rel="stylesheet" href="stylesheets/fonts-min.css" type="text/css" charset="utf-8" />
+	<link rel="stylesheet" href="stylesheets/colorpicker.css" type="text/css" charset="utf-8" />
+	<link rel="stylesheet" href="stylesheets/application.css" type="text/css" charset="utf-8" />
+	
+	<script src="javascripts/jquery-1.4.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="javascripts/colorpicker.js" type="text/javascript" charset="utf-8"></script>
+	<script src="javascripts/raphael-min.js" type="text/javascript" charset="utf-8"></script>
+	
+	<script type="text/javascript" charset="utf-8">
+	
+	  window.resizeTo( screen.availWidth, screen.availHeight );
+    
+	  // Add JSON support for localStorage
+  	Storage.prototype.setObject = function(key, value) {
+        this.setItem(key, JSON.stringify(value));
+    }
+    Storage.prototype.getObject = function(key) {
+        return JSON.parse(this.getItem(key));
+    }
+  
+  
+	
+	 $(document).ready(function() {
+	   var counter = $("#counter");
+     var browser_height = $(window).height();
+     var browser_width = $(window).width();
+     var guide_color = '#00ffff';
+     var highlight_color = "#ff00ff";
+     $(".creator").hover(function() {
+       $(this).css({"background": guide_color});
+     }, function() {
+       $(this).css({"background": "none"});
+     });
+
+     var h_ruler = $("#h_ruler");
+     var h_creator = $(".h_creator");
+     h_ruler.width(browser_width);
+     h_creator.width(browser_width);
+
+     var v_ruler = $("#v_ruler");
+     var v_creator = $(".v_creator");
+     v_ruler.height(browser_height);
+     v_creator.height(browser_height);
+
+     var step = 100;
+
+     // var canvas = $('#canvas');
+     // canvas.width(browser_width);
+     // canvas.height(browser_height);
+     
+     var paper = Raphael(0, 0, browser_width, browser_height);
+     var rect = paper.rect(0,0,browser_width, browser_height);
+     rect.attr({fill: "green", opacity: 0, zIndex: 5});
+     
+     var selected_guide = null;
+     var selected_guide_type = null;
+     
+     $(document).mousedown(function(e) {
+       if (e.pageX < v_creator.width() && e.pageY >= 20) {
+         createVerticalGuide(e);
+       }
+       if (e.pageY < h_creator.height() && e.pageX >= 20) {
+         createHorizontalGuide(e);
+       }
+       // counter.show();
+     });
+     
+     loadStoredGuides();
+     
+     
+     function loadStoredGuides() {
+       if (localStorage.guide_color) {
+         guide_color = localStorage.guide_color;
+         $("#currentColor").css({backgroundColor: guide_color});
+       }
+       if (localStorage.highlight_color) {
+         highlight_color = localStorage.highlight_color;
+         $("#currentHighlight").css({backgroundColor: highlight_color});
+       }
+       if (localStorage.v_guides) {
+         v_guides = localStorage.getObject("v_guides");
+         jQuery.each(v_guides, function(i, val) {
+           createVerticalGuide(val);
+           unselectGuide();
+         });
+       }
+       if (localStorage.h_guides) {
+         h_guides = localStorage.getObject("h_guides");
+         jQuery.each(h_guides, function(i, val) {
+           createHorizontalGuide(val);
+           unselectGuide();
+         });
+       }
+     }
+     
+     function createVerticalGuide(e) {
+       if (e.pageX) {
+         var guide = paper.rect(e.pageX, 0, 0.1, browser_height);
+       } else {
+         var guide = paper.rect(e, 0, 0.1, browser_height);
+       }
+
+       guide.attr({stroke: highlight_color});
+       selected_guide = guide;
+       selected_guide_type = 'vertical';
+
+       // this.attr({stroke: "red"});
+       // selected_guide = this;
+       // selected_guide_type = 'vertical';
+
+       guide.mousedown(function(e) {
+         this.attr({stroke: highlight_color});
+         selected_guide = this;
+         selected_guide_type = 'vertical';
+         counter.show();
+       });
+
+       guide.mouseup(function(e) {
+         unselectGuide();
+         addGuideToStore();
+       });
+
+       guide.mouseover(function(e) {
+         this.attr({cursor: "pointer"});
+       });
+     }
+     
+     function createHorizontalGuide(e) {
+       if (e.pageY) {
+         var guide = paper.rect(0, e.pageY, browser_width, 0.1);
+       } else {
+         var guide = paper.rect(0, e, browser_width, 0.1);
+       }
+
+       guide.attr({stroke: highlight_color});
+       selected_guide = guide;
+       selected_guide_type = 'horizontal';
+
+       guide.mousedown(function(e) {
+         this.attr({stroke: highlight_color});
+         selected_guide = this;
+         selected_guide_type = 'horizontal';
+         counter.show();
+       });
+
+       guide.mouseup(function(e) {
+         unselectGuide();
+         addGuideToStore();
+       });
+
+       guide.mouseover(function(e) {
+         this.attr({cursor: "pointer"});
+       });
+     }
+     
+     
+     function unselectGuide() {
+       if (selected_guide) {
+         selected_guide.attr({stroke: guide_color});
+         selected_guide = null;
+         selected_guide_type = null;
+         counter.hide();
+       }
+     }
+     
+     function addGuideToStore() {
+       all_guides = document.getElementsByTagName('rect');
+       v_guides = [];
+       h_guides = [];
+       for(i = 0; i < all_guides.length; i++) {
+         guide = all_guides[i];
+         if (guide.getAttribute("width") == 0.1) {
+           v_guides.push(guide.getAttribute("x"));
+         } else if (guide.getAttribute("height") == 0.1) {
+           h_guides.push(guide.getAttribute("y"));
+         }
+       }
+       localStorage.setObject("v_guides", v_guides);
+       localStorage.setObject("h_guides", h_guides);
+     }
+     
+     rect.mousemove(function(e) {
+       var counter = $("#counter");
+       if (selected_guide_type == 'vertical') {
+         // selected_guide.attr({path: "M" + e.pageX + " 0L" + e.pageX + " " + browser_height});
+         selected_guide.attr({x: e.pageX});
+         if (e.pageY + step + counter.height() >= browser_height) {
+           counter.css({"left" : e.pageX - counter.width()/2 + "px", "top" : e.pageY - step + "px"});
+         } else {
+           counter.css({"left" : e.pageX - counter.width()/2 + "px", "top" : e.pageY + step + "px"});
+         }
+         counter.text(e.pageX);
+       } else if (selected_guide_type == 'horizontal') {
+         selected_guide.attr({y: e.pageY});
+         if (e.pageX + step + counter.width() + 10 >= browser_width) {
+           counter.css({"left" : e.pageX - step + "px", "top" : e.pageY - counter.height()/2 + "px"});
+         } else {
+           counter.css({"left" : e.pageX + step + "px", "top" : e.pageY - counter.height()/2 + "px"});
+         }
+         counter.text(e.pageY);
+       }
+     });
+     
+     // Unselect guide with "ESC" key
+     $(document).keyup(function(e){
+       if (e.keyCode == 27) {
+         unselectGuide();
+         addGuideToStore();
+       }
+     });
+
+     $("button.clear").click(function(e) {
+       localStorage.clear();
+       window.location = window.location;
+     });
+     
+ 		function getAllGuides() {
+ 		  rects = document.getElementsByTagName('rect');
+ 		  guides = [];
+ 		  for (i = 0; i < rects.length; i++) {
+ 		    if (rects[i].getAttribute("width") == 0.1 || rects[i].getAttribute("height") == 0.1) {
+ 		      guides.push(rects[i]);
+ 		    }
+ 		  }
+ 		  return guides;
+ 		}
+ 		
+ 		function setGuideColor(color) {
+   		guides = getAllGuides();
+   		for (i = 0; i < guides.length; i++) {
+   		  guides[i].setAttribute("stroke", color);
+   		}
+   		localStorage.guide_color = color;
+ 		}
+
+ 		function setGuideHighlight(color) {
+      guides = getAllGuides();
+      for (i = 0; i < guides.length; i++) {
+        if (guides[i] == selected_guide) {
+          guides[i].setAttribute("stroke", highlight_color);
+        }
+      }
+   		localStorage.highlight_color = color;
+ 		}
+ 		
+ 		
+ 		// Color Pickers
+ 		$('#colorSelector').ColorPicker({
+      color: $("#currentColor").css("backgroundColor"),
+    	onShow: function (colpkr) {
+    		$(colpkr).fadeIn(500);
+    		$(".colorpicker_current_color, .colorpicker_submit").css({display: "none"});
+    		return false;
+    	},
+    	onHide: function (colpkr) {
+    		$(colpkr).fadeOut(500, function() {
+          window.location = window.location;
+    		});
+    		return false;
+    	},
+    	onChange: function (hsb, hex, rgb) {
+    		$('#colorSelector div').css('backgroundColor', '#' + hex);
+        setGuideColor("#" + hex);
+    	}
+    });
+
+ 		$('#highlightSelector').ColorPicker({
+      color: $("#currentHighlight").css("backgroundColor"),
+    	onShow: function (colpkr) {
+    		$(colpkr).fadeIn(500);
+    		$(".colorpicker_current_color, .colorpicker_submit").css({display: "none"});
+    		return false;
+    	},
+    	onHide: function (colpkr) {
+    		$(colpkr).fadeOut(500, function() {
+          window.location = window.location;
+    		});
+    		return false;
+    	},
+    	onChange: function (hsb, hex, rgb) {
+    		$('#highlightSelector div').css('backgroundColor', '#' + hex);
+        setGuideHighlight("#" + hex);
+    	}
+    });
+ 		
+ 		// Keyboard Shortcut to Delete Guide
+    $(document).keydown(function(e){
+      if (e.keyCode == 8) {
+        if (selected_guide) {
+          selected_guide_type = null;
+          selected_guide.remove();
+          addGuideToStore();
+          counter.hide()
+        }
+        return false;
+      }
+    });
+ 		
+ 		// Keyboard Shortcuts
+    $(document).keypress(function(e){
+      if (e.shiftKey) {
+        step = 10;
+      } else {
+        step = 1;
+      }
+      // move guide left
+      if (e.keyCode == 37 && selected_guide && selected_guide_type == 'vertical') {
+        num = parseInt(counter.text());
+        new_num = num - step;
+        if (new_num >= 0) {
+          selected_guide.attr({x: new_num});
+          counter.text(new_num);
+          counter.css({"left" : new_num - counter.width()/2 + "px"});
+        }
+        return false;
+      }
+      // move guide right
+      if (e.keyCode == 39 && selected_guide && selected_guide_type == 'vertical') {
+        num = parseInt(counter.text());
+        new_num = num + step;
+        if (new_num <= browser_width) {
+          selected_guide.attr({x: new_num});
+          counter.text(new_num);
+          counter.css({"left" : new_num - counter.width()/2 + "px"});
+        }
+        return false;
+      }
+      // move guide up
+      if (e.keyCode == 38 && selected_guide && selected_guide_type == 'horizontal') {
+        num = parseInt(counter.text());
+        new_num = num - step;
+        if (new_num >= 0) {
+          selected_guide.attr({y: new_num});
+          counter.text(new_num);
+          counter.css({"top" : new_num - counter.width()/2 + "px"});
+        }
+        return false;
+      }
+      // move guide down
+      if (e.keyCode == 40 && selected_guide && selected_guide_type == 'horizontal') {
+        num = parseInt(counter.text());
+        new_num = num + step;
+        if (new_num <= browser_width) {
+          selected_guide.attr({y: new_num});
+          counter.text(new_num);
+          counter.css({"top" : new_num - counter.width()/2 + "px"});
+        }
+        return false;
+      }
+      // delete guide
+      if (e.keyCode == 8) {
+        if (selected_guide) {
+          selected_guide_type = null;
+          selected_guide.remove();
+          addGuideToStore();
+        }
+        return false;
+      }
+    });
+    
+    
+   });
+	</script>
+	
+	<style type="text/css" media="screen">
+	  html, body {
+	    background: none;
+	    overflow: hidden;
+	  }
+	  .ruler {
+	    opacity: 0.5;
+	    position: absolute;
+	    left: 0;
+	    top: 0;
+	  }
+	  .creator {
+	    position: absolute;
+	    z-index: 10;
+	  }
+	  .creator:hover {
+	    cursor: pointer;
+	    opacity: 0.3;
+	  }
+	  #h_ruler {
+	    background: url(images/h_ruler.png) left bottom repeat-x;
+	    height: 20px;
+	    left: 20px;
+	  }
+	  .h_creator {
+	    height: 5px;
+	    left: 20px;
+	  }
+	  #v_ruler {
+	    background: url(images/v_ruler.png) right top repeat-y;
+	    width: 20px;
+	    top: 20px;
+	  }
+	  .v_creator {
+	    width: 5px;
+	    top: 20px;
+	  }
+	  #corner {
+	    width: 20px;
+	    height: 20px;
+	    background: #292929;
+	    opacity: 0.5;
+	    position: absolute;
+	    left: 0;
+	    top: 0;
+	    z-index: 30;
+	  }
+	  #counter {
+	    position: absolute;
+	    border: 1px solid #000;
+	    border-radius: 5px;
+	    padding: 1px 2px;
+	    background-color: #333;
+	    color: #fff;
+	    font-size: 77%;
+	    z-index: 20;
+	    display: none;
+	  }
+	  #options {
+	    position: absolute;
+	    z-index: 20;
+	    left: 50%;
+	    top: 50%;
+	  }
+	  a.prefs {
+	    position: absolute;
+	    top: 2px;
+	    left: 2px;
+	    z-index: 100;
+	    width: 16px;
+	    height: 16px;
+	    background: url(images/wrench.png) no-repeat;
+	  }
+	  a.prefs:hover {
+	    background: url(images/wrench_orange.png) no-repeat;
+	  }
+    svg {
+      position: relative;
+      z-index: 0;
+    }
+    svg rect {
+      position: relative;
+      z-index: 10;
+    }   
+	</style>
+</head>
+
+<body>
+  <div id="counter"></div>
+  <div id="h_ruler" class="ruler"></div>
+  <div class="h_creator creator"></div>
+  
+  <div id="v_ruler" class="ruler"></div>
+  <div class="v_creator creator"></div>
+  
+  <div id="corner"></div>
+  
+  <a class="prefs" href="#"></a>
+
+  <div id="options" style="">
+    <button class="clear">Clear</button>
+
+		<div class="customWidget">
+			<div id="colorSelector">
+			  <div id="currentColor" style="background-color: #00ffff"></div>
+			</div>
+      <!-- <div id="colorpickerHolder"></div> -->
+		</div>
+
+		<div class="customWidget">
+		  <div id="highlightSelector">
+		    <div id="currentHighlight" style="background-color: #ff00ff"></div>
+		  </div>
+		</div>
+  </div>
+  
+  
+</body>
+</html>

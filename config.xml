@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<widget defaultmode="fullscreen" transparent="true">
+  <widgetname>Guides</widgetname>
+  <description>A helper for graphic designers and web developers.</description>
+  <author>
+    <name>Nathan Wright</name>
+    <email>nathan@brandalism.com</email>
+    <link>http://brandalism.com</link>
+    <organization>Brandalism, Inc.</organization>
+  </author>
+</widget>

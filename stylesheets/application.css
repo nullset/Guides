@@ -1,0 +1,20 @@
+#colorSelector, #highlightSelector {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 36px;
+	height: 36px;
+	background: url(../images/colorpicker/select2.png);
+}
+#colorSelector div, #highlightSelector div {
+	position: absolute;
+	top: 4px;
+	left: 4px;
+	width: 28px;
+	height: 28px;
+	background: url(../images/colorpicker/select2.png) center;
+}
+.customWidget {
+	position: relative;
+	height: 36px;
+}
