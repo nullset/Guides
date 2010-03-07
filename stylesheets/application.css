@@ -17,4 +17,27 @@
 .customWidget {
 	position: relative;
 	height: 36px;
+	width: 36px;
+  float: left;
+  margin-right: .5em;
+}
+.colorpicker {
+  z-index: 999;
+}
+
+dl {
+  color: #fff;
+}
+dt {
+  clear: both;
+}
+dd {
+  clear: both;
+  line-height: 36px;
+}
+dd + dd {
+  padding-top: .5em;
+}
+dd label {
+  float: left;
 }

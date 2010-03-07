@@ -10,8 +10,11 @@
 	<link rel="stylesheet" href="stylesheets/fonts-min.css" type="text/css" charset="utf-8" />
 	<link rel="stylesheet" href="stylesheets/colorpicker.css" type="text/css" charset="utf-8" />
 	<link rel="stylesheet" href="stylesheets/application.css" type="text/css" charset="utf-8" />
+  <link rel="stylesheet" href="stylesheets/ui-lightness/jquery-ui-1.8rc3.custom.css" type="text/css" charset="utf-8" />
+	
 	
 	<script src="javascripts/jquery-1.4.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="javascripts/jquery-ui-1.8rc3.custom.min.js" type="text/javascript" charset="utf-8"></script>
 	<script src="javascripts/colorpicker.js" type="text/javascript" charset="utf-8"></script>
 	<script src="javascripts/raphael-min.js" type="text/javascript" charset="utf-8"></script>
 	
@@ -33,8 +36,12 @@
 	   var counter = $("#counter");
      var browser_height = $(window).height();
      var browser_width = $(window).width();
-     var guide_color = '#00ffff';
-     var highlight_color = "#ff00ff";
+     var guide_color = '';
+     var highlight_color = '';
+     var guide_opacity = '';
+     
+     loadSettings();
+     
      $(".creator").hover(function() {
        $(this).css({"background": guide_color});
      }, function() {
@@ -65,13 +72,15 @@
      var step = 100;
      
      v_creator.mousedown(function(e) {
-         createVerticalGuide(e);
-         counter.css({"left" : e.pageX + step + "px", "top" : e.pageY - counter.height()/2 + "px"});
-         counter.text(e.pageX);
+       loadSettings();
+       createVerticalGuide(e);
+       counter.css({"left" : e.pageX + step + "px", "top" : e.pageY - counter.height()/2 + "px"});
+       counter.text(e.pageX);
        counter.show();
      });
      
      h_creator.mousedown(function(e) {
+       loadSettings();
        createHorizontalGuide(e);
        counter.css({"left" : e.pageX - counter.width()/2 + "px", "top" : e.pageY + step + "px"});
        counter.text(e.pageY);
@@ -80,16 +89,29 @@
      
      loadStoredGuides();
      
-     
-     function loadStoredGuides() {
+     function loadSettings() {
        if (localStorage.guide_color) {
          guide_color = localStorage.guide_color;
-         $("#currentColor").css({backgroundColor: guide_color});
+       } else {
+         guide_color = '#00ffff';
        }
+       $("#currentColor").css({backgroundColor: guide_color});
+       
        if (localStorage.highlight_color) {
          highlight_color = localStorage.highlight_color;
-         $("#currentHighlight").css({backgroundColor: highlight_color});
+       } else {
+         highlight_color = '#ff00ff';
        }
+       $("#currentHighlight").css({backgroundColor: highlight_color});
+       
+       if (localStorage.guide_opacity) {
+         guide_opacity = localStorage.guide_opacity;
+       } else {
+         guide_opacity = 1;
+       }
+     }
+     
+     function loadStoredGuides() {
        if (localStorage.v_guides) {
          v_guides = localStorage.getObject("v_guides");
          jQuery.each(v_guides, function(i, val) {
@@ -112,8 +134,9 @@
        } else {
          var guide = paper.rect(e, 0, 0.1, browser_height);
        }
+       // alert(guide_opacity);
 
-       guide.attr({stroke: highlight_color});
+       guide.attr({stroke: highlight_color, opacity: guide_opacity});
        selected_guide = guide;
        selected_guide_type = 'vertical';
 
@@ -144,8 +167,9 @@
        } else {
          var guide = paper.rect(0, e, browser_width, 0.1);
        }
+       // alert(guide_opacity);
 
-       guide.attr({stroke: highlight_color});
+       guide.attr({stroke: highlight_color, opacity: guide_opacity});
        selected_guide = guide;
        selected_guide_type = 'horizontal';
 
@@ -225,7 +249,7 @@
 
      $("button.clear").click(function(e) {
        localStorage.clear();
-       window.location = window.location;
+       window.location.reload();
      });
      
  		function getAllGuides() {
@@ -257,6 +281,14 @@
    		localStorage.highlight_color = color;
  		}
  		
+ 		function setGuideOpacity(value) {
+ 		  guides = getAllGuides();
+   		for (i = 0; i < guides.length; i++) {
+        guides[i].setAttribute("style", "opacity: " + value);
+        guides[i].setAttribute("opacity", value);
+   		}
+   		localStorage.guide_opacity = value;
+ 		}
  		
  		// Color Pickers
  		$('#colorSelector').ColorPicker({
@@ -371,8 +403,20 @@
         return false;
       }
     });
-    
-    
+
+    $(".prefs").click(function() {
+      $("#options").slideToggle();
+    });
+
+    $("#guide_opacity").slider({
+      value: guide_opacity,
+      max: 1,
+      step: 0.01,
+      slide: function(e, ui) {
+        setGuideOpacity(ui.value);
+      }
+    });
+
    });
 	</script>
 	
@@ -399,6 +443,7 @@
 	    background: url(images/h_ruler.png) left bottom repeat-x;
 	    height: 20px;
 	    left: 20px;
+	    z-index: 1;
 	  }
 	  .h_creator {
 	    height: 5px;
@@ -408,6 +453,7 @@
 	    background: url(images/v_ruler.png) right top repeat-y;
 	    width: 20px;
 	    top: 20px;
+	    z-index: 1;
 	  }
 	  .v_creator {
 	    width: 5px;
@@ -437,8 +483,13 @@
 	  #options {
 	    position: absolute;
 	    z-index: 20;
-	    left: 50%;
-	    top: 50%;
+	    left: 0;
+	    top: 0;
+	    padding: 20px;
+	    background: url(images/bg.png);
+	    z-index: 10;
+	    width: 100%;
+	    border-bottom: 1px solid #333;
 	  }
 	  a.prefs {
 	    position: absolute;
@@ -447,11 +498,22 @@
 	    z-index: 100;
 	    width: 16px;
 	    height: 16px;
-	    background: url(images/wrench.png) no-repeat;
+      background: url(images/cog.png) no-repeat;
 	  }
-	  a.prefs:hover {
-	    background: url(images/wrench_orange.png) no-repeat;
+	  .slider_wrapper {
+	    width: 150px;
 	  }
+/*    button.clear {
+      background: #eee;
+      border: 2px solid #ff0;
+      border-bottom-color: #aaa;
+      border-right-color: #aaa;
+      border-top-color: #ccc;
+      border-left-color: #ccc;
+      border-radius: 7px;
+      padding: 3px 10px;
+    }
+*/
     svg {
       position: relative;
       z-index: 0;
@@ -476,22 +538,37 @@
   <a class="prefs" href="#"></a>
 
   <div id="options" style="">
-    <button class="clear">Clear</button>
+    <h2>Guides</h2>
+    <dl>
+      <dt>Colors</dt>
+      <dd>
+        <div class="customWidget">
+    			<div id="colorSelector">
+    			  <div id="currentColor" style="background-color: #00ffff"></div>
+    			</div>
+    		</div>
+        <label>Guide Color</label>
+      </dd>
+      <dd>
+    		<div class="customWidget">
+    		  <div id="highlightSelector">
+    		    <div id="currentHighlight" style="background-color: #ff00ff"></div>
+    		  </div>
+    		</div>
+        <label>Highlight Color</label>
+      </dd>
+      <dt>Opacity</dt>
+      <dd>
+        <div class="slider_wrapper">
+          <div id="guide_opacity"></div>
+        </div>
+      </dd>
+      <dt>Operations</dt>
+      <dd><button class="clear">Clear Guides</button></dd>
+    </dl>
 
-		<div class="customWidget">
-			<div id="colorSelector">
-			  <div id="currentColor" style="background-color: #00ffff"></div>
-			</div>
-      <!-- <div id="colorpickerHolder"></div> -->
-		</div>
 
-		<div class="customWidget">
-		  <div id="highlightSelector">
-		    <div id="currentHighlight" style="background-color: #ff00ff"></div>
-		  </div>
-		</div>
   </div>
-  
   
 </body>
 </html>

@@ -26,14 +26,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>160</integer>
+				<integer>8</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>107</integer>
+			<integer>0</integer>
 		</dict>
 		<key>colorpicker/js/layout.js</key>
 		<dict>
@@ -65,33 +65,19 @@
 				<integer>24</integer>
 			</dict>
 		</dict>
-		<key>config.xml</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>10</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-		</dict>
 		<key>index.html</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>41</integer>
+				<integer>34</integer>
 				<key>line</key>
-				<integer>443</integer>
+				<integer>449</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>434</integer>
+			<integer>419</integer>
 		</dict>
 		<key>raphael.js</key>
 		<dict>
@@ -114,7 +100,7 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>16</integer>
+				<integer>29</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -126,13 +112,12 @@
 	<array>
 		<string>raphael.js</string>
 		<string>index.html</string>
-		<string>config.xml</string>
 		<string>stylesheets/application.css</string>
 		<string>colorpicker/js/layout.js</string>
 		<string>colorpicker/css/colorpicker.css</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
-	<false/>
+	<true/>
 	<key>windowFrame</key>
 	<string>{{298, 4}, {1132, 874}}</string>
 </dict>
